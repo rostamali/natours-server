@@ -9,13 +9,6 @@ const cors = require('cors');
 app.use(cors());
 app.use(express.json());
 
-
-// 
-// 
-// 
-// 
-// 
-
 // mongoDB connect
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.urhyn.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -27,6 +20,7 @@ async function run() {
       await client.connect();
       const database = client.db("natours");
       const packageCollection = database.collection("travelPackage");
+      const orderCollection = database.collection("Orders");
 
       // create a document to insert
       app.post('/service', async(req, res)=>{
@@ -48,6 +42,19 @@ async function run() {
         const query = {_id: ObjectId(id)};
         const service = await packageCollection.findOne(query);
         res.send(service);
+      })
+
+      // create orders
+      app.post('/order', async (req, res) =>{
+        const order = req.body;
+        const result = await orderCollection.insertOne(order);
+      })
+
+      // send my order to the UI
+      app.get('/orders', async (req, res)=>{
+        const query = orderCollection.find({});
+        const orders = await query.toArray();
+        res.send(orders);
       })
       
     } finally {
