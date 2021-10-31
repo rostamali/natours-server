@@ -21,6 +21,7 @@ async function run() {
       const database = client.db("natours");
       const packageCollection = database.collection("travelPackage");
       const orderCollection = database.collection("Orders");
+      const reviewCollection = database.collection("reviews");
 
       // create a document to insert
       app.post('/service', async(req, res)=>{
@@ -68,9 +69,8 @@ async function run() {
       // update data
       app.put('/order/:id', async (req, res)=>{
         const id = req.params.id;
-        const updateDoc = req.body;
+        const updateDoc = req.body.status;
         const query = {_id: ObjectId(id)};
-        console.log(updateDoc);
         const result = await orderCollection.updateOne(
           query, 
           {$set:
@@ -79,8 +79,14 @@ async function run() {
             }
           }
         );
-        // console.log(result);
         res.send(result);
+      })
+
+      // send review to the UI
+      app.get('/reviews', async (req, res)=>{
+        const query = reviewCollection.find({});
+        const  reviews = await query.toArray();
+        res.send(reviews);
       })
       
     } finally {
@@ -90,9 +96,9 @@ async function run() {
 run().catch(console.dir);
 
 app.get('/', (req, res) => {
-  res.send('Hello World!')
+  res.send('Hello World!');
 })
 
 app.listen(port, () => {
-  console.log(`DB connected ${uri}`)
+  console.log(`DB connected`);
 })
